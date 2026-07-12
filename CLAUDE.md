@@ -5,13 +5,23 @@ cooling-off timer, and when it ends the app asks once — do you still need it?
 SwiftUI + SwiftData + local notifications (UserNotifications). Built and tested
 on the iOS 26.5 simulator (iPhone 17) in Xcode 26.6.
 
+## Status: curriculum complete
+
+All 12 steps of `work-artifacts/walkthrough-curriculum.json` are done — the
+app runs on the user's own iPhone (step 12, free 7-day provisioning or paid
+program, done entirely by the user per the human-only signing/Apple ID
+boundary). Core loop, notification round-trip, stats, and polish are all
+verified end-to-end, on-device, not just in the simulator. There is no next
+step to resume; treat any further work here as new feature requests, not
+curriculum continuation.
+
 ## Source of truth
 
-This build follows `work-artifacts/walkthrough-curriculum.json` step by step
+This build followed `work-artifacts/walkthrough-curriculum.json` step by step
 (12 steps, schema `live_coach_curriculum.v1`). That file has the full
 instructions, code listings, success criteria, and "why it matters" reasoning
-for every step — read it before assuming anything about scope or ordering.
-Don't re-derive the plan from scratch; it's already fully specified there.
+behind every decision below — read it before assuming anything about why
+something is built the way it is.
 
 ## Decisions locked so far
 
@@ -44,7 +54,7 @@ fails. Verify new view code against both `platform=iOS Simulator,name=iPhone
 17` and `platform=macOS` destinations, not just the iOS one, since Xcode's own
 Cmd+R may target either depending on the selected scheme destination.
 
-## Data model conventions (once step 4 lands)
+## Data model conventions
 
 - `Urge.readyAt` is **computed** from `createdAt + cooldownSeconds`, never
   stored — keeps the countdown timer from ever drifting out of sync.
@@ -112,12 +122,15 @@ step 9 (`UrgeTests` + `UrgeStatsTests`). New test files need the explicit
 `xcodeproj` gem wiring, unlike app source files — see the git history for the
 add-test-file script pattern.
 
-## Working agreement
+## Working agreement (still applies to any future work here)
 
-- Go step by step through the curriculum; don't skip ahead.
-- Steps marked `human_only` or with a `mac_permission` gate (Xcode project
-  wizard, notification permission tap, Apple ID sign-in/2FA, payment) must
-  stop and hand back to the user — never attempt to perform or simulate these.
+- Anything involving an Xcode GUI wizard, a permission tap, Apple ID
+  sign-in/2FA, or payment must stop and hand back to the user — never attempt
+  to perform or simulate these.
 - Never ask for or handle an Apple ID password, 2FA code, or payment details.
 - Prefer showing exact code and exact Xcode menu paths over describing them.
 - On a build failure, ask for the exact red error text rather than guessing.
+- Verify every change against both `platform=iOS Simulator,name=iPhone 17`
+  and `platform=macOS` destinations (see Platform note above), and run
+  `xcodebuild test` before considering anything done.
+- Commit after each verified unit of work, with CLAUDE.md updated alongside.
