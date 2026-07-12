@@ -1,0 +1,872 @@
+{
+  "schema_version": "live_coach_curriculum.v1",
+  "curriculum_id": "second_thought_impulse_app",
+  "id": "second_thought_impulse_app",
+  "version": 1,
+  "title": "Build Second Thought — an impulse-purchase preventer for iOS",
+  "description": "Build and run a real iOS app in Xcode 26 that intercepts impulse purchases: you log the thing you want, the app makes you wait out a cooling-off timer, and when the timer ends it asks you once — do you still need it? Twelve steps from empty project to a working app on your own iPhone, using SwiftUI, SwiftData and local notifications.",
+  "summary": "Log an urge, sit out a cooldown, get asked once more whether you still need it — a complete SwiftUI + SwiftData + UserNotifications build, tested end to end on the iOS 26 simulator.",
+  "global_prompt": "Guide one step at a time and keep the user in Xcode, not in theory. This user has Xcode 26.6, macOS 26.5.1 and iOS 26.5 simulators (iPhone 17 family) installed, but xcode-select still points at the Command Line Tools — fix that in step 2 before relying on any xcodebuild or simctl command. Prefer showing the exact code and the exact Xcode menu path over describing them. When a build fails, ask for the exact red error text rather than guessing. Steps 4, 5, 6, 8 and 9 are pure code and a connected agent may write them outright; steps 2, 7, 10 and 12 contain a password prompt, a permission tap, or an Apple ID login where the agent must stop and hand back to the user. Never ask the user to hand over an Apple ID password, 2FA code, or payment details. Remind them once, around step 10, that the app is only genuinely tested when the notification fires with the app backgrounded.",
+  "prerequisites": [],
+  "intake": [],
+  "steps": [
+    {
+      "step_id": "step_1",
+      "title": "Lock the name and the one-sentence core loop",
+      "goal": "Commit to a name and a single sentence describing the loop, so every later decision has a tiebreaker.",
+      "coach_prompt": "The user asked for a cool name. Lead with Second Thought as the recommendation and give the alternates, but let the user pick — this is their app. Then make them say the core loop out loud in one sentence. Do not let scope creep in: no budgeting, no bank sync, no social feed in v1.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Name locked"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "You have a chosen app name written down, the one-sentence core loop, and the 4-screen list."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": false,
+        "hint_template": "If they are stuck on the name, just tell them to use Second Thought and move on — the name is not the hard part and they can rename the display name later without renaming the target."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_2",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_1",
+        "parent_phase_title": "Decide & Set Up",
+        "phase_type": "planning",
+        "optional": false,
+        "depends_on": [],
+        "instructions": "Pick your app name. My recommendation:\n\n  **Second Thought** — because the whole product IS the second thought. Tagline: \"Sleep on it. Then decide.\"\n\nAlternates if you want a different vibe:\n  - **Cooldown** — plain, obvious, calm.\n  - **Simmer** — let the urge simmer down.\n  - **Hold Up** — playful, a little funny.\n  - **Not Yet** — the app's entire opinion in two words.\n\nThen write this one sentence and keep it visible while you build:\n\n  \"I log the thing I want, the app makes me wait, and when the timer ends it asks me once: do you still need it?\"\n\nThat is the whole v1. Explicitly OUT of scope for v1: bank/card syncing, blocking Amazon or Safari, accounts and login, sharing/social, widgets, Apple Watch. Every one of those is a reason to never finish.\n\nWrite down the 4 screens you are going to build:\n  1. Waiting list (everything currently cooling off)\n  2. Log an urge (the entry form)\n  3. The Verdict (the 'do you still need it?' prompt)\n  4. Stats (money not spent, urges resisted)",
+        "done_when": "You have a chosen app name written down, the one-sentence core loop, and the 4-screen list.",
+        "why_it_matters": "Impulse-purchase apps die from scope creep. The cooling-off mechanic is the entire clinically useful idea — the delay between wanting and buying is what breaks the impulse. Everything else is decoration. Naming it now also gives you your Xcode project name, so you never have to rename a target later (which is genuinely annoying in Xcode).",
+        "expected_result": "A named app, a one-sentence loop, and a 4-screen scope you can hold in your head.",
+        "notes": "Display name can be changed later via the target's Display Name field. The Xcode project/target name is the painful one to change, which is why we pick now.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Name locked",
+        "coach_prompt": "The user asked for a cool name. Lead with Second Thought as the recommendation and give the alternates, but let the user pick — this is their app. Then make them say the core loop out loud in one sentence. Do not let scope creep in: no budgeting, no bank sync, no social feed in v1.",
+        "agent_capability": {
+          "agent_policy": "agent_maybe",
+          "agent_rationale": "An agent can propose names, draft the scope sentence and the screen list, but the name and the taste call are the user's.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "user_judgment"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_2",
+      "title": "Point the command line at Xcode 26 and boot the simulator",
+      "goal": "Make Xcode's toolchain the active one so builds and simulator commands work from the terminal.",
+      "coach_prompt": "This Mac has Xcode 26.6 installed but xcode-select still points at the Command Line Tools, so xcodebuild and simctl are not on PATH. Walk them through the sudo switch, explain why it needs the password, and stop there if they do not want to type it — Cmd+R inside Xcode works without this fix.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Toolchain ready"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "`xcodebuild -version` prints Xcode 26.x instead of an error."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "An iPhone 17 (iOS 26.5) simulator window is open and booted."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "If xcodebuild still errors, they either skipped sudo or hit a different Xcode path — re-run `xcode-select -p` and read it back. If Simulator opens to a black screen, give it 30s on first boot."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_3",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_1",
+        "parent_phase_title": "Decide & Set Up",
+        "phase_type": "planning",
+        "optional": false,
+        "depends_on": [
+          "step_1"
+        ],
+        "instructions": "Your Mac already has **Xcode 26.6**, macOS 26.5.1, and **iOS 26.5 simulators** (iPhone 17, 17 Pro, 17 Pro Max, iPhone Air, iPad). But the command line is currently pointed at the standalone Command Line Tools, not at Xcode. Check it:\n\n    xcode-select -p\n\nIf that prints `/Library/Developer/CommandLineTools`, then `xcodebuild` and `xcrun simctl` will not work. Fix it:\n\n    sudo xcode-select -s /Applications/Xcode.app/Contents/Developer\n\nIt will ask for your Mac login password (you type it, not the agent — nothing is echoed as you type). Then verify:\n\n    xcodebuild -version              # expect: Xcode 26.6\n    xcrun simctl list devices available | head\n\nNow boot the simulator you'll use all the way through:\n\n    open -a Simulator\n    xcrun simctl boot \"iPhone 17\"    # skip if it is already booted\n\nAlso launch Xcode once and let it finish any 'Installing components' step before you continue.",
+        "done_when": "`xcodebuild -version` prints Xcode 26.6, and an iPhone 17 simulator is booted and visible on screen.",
+        "why_it_matters": "You do not strictly need this to build with Cmd+R in Xcode — but you do need it for any command-line build, and Deep24 or a coding agent can only verify your build for you if `xcodebuild` runs. Fixing it now means every later 'did it build?' check is a one-liner instead of a guessing game.",
+        "expected_result": "`xcode-select -p` points at /Applications/Xcode.app/Contents/Developer and the iPhone 17 simulator is booted.",
+        "notes": "Verified on this Mac: Xcode 26.6, macOS 26.5.1, iOS 26.5 runtime, simulators include iPhone 17 / 17 Pro / 17 Pro Max / iPhone Air.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Toolchain ready",
+        "coach_prompt": "This Mac has Xcode 26.6 installed but xcode-select still points at the Command Line Tools, so xcodebuild and simctl are not on PATH. Walk them through the sudo switch, explain why it needs the password, and stop there if they do not want to type it — Cmd+R inside Xcode works without this fix.",
+        "agent_capability": {
+          "agent_policy": "agent_maybe",
+          "agent_rationale": "An agent can run the read-only checks (xcode-select -p, xcodebuild -version, simctl list) and boot the simulator, but `sudo xcode-select -s` needs the user's Mac password and must stop for them.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell"
+          ],
+          "agent_access_gates": [
+            {
+              "kind": "mac_permission",
+              "default_owner": "user",
+              "agent_can_prepare": true,
+              "agent_may_continue_if_already_authenticated": true,
+              "resume_check": "User confirms they typed their Mac password and `xcodebuild -version` now prints a version."
+            }
+          ],
+          "agent_done_evidence": [
+            "command_output",
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_3",
+      "title": "Create the SwiftUI + SwiftData project in Xcode",
+      "goal": "Get a running, empty app on the simulator before writing a single line of your own code.",
+      "coach_prompt": "This is Xcode GUI work — guide them through the New Project wizard field by field and let them screenshot if a field looks different. The key choices are Interface: SwiftUI and Storage: SwiftData. Make them run it (Cmd+R) and see the template app before moving on.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "App runs"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "A SecondThought Xcode project exists and builds with zero errors."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The template app launches on the iPhone 17 simulator and the + button adds a row."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "Ask for a screenshot of the wizard or the error. Most common: wrong simulator selected, or Storage set to None (they can still continue — they'd just add `import SwiftData` and the container manually)."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_4",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_2",
+        "parent_phase_title": "Build the Core Loop",
+        "phase_type": "workflow",
+        "optional": false,
+        "depends_on": [
+          "step_2"
+        ],
+        "instructions": "In Xcode: **File > New > Project… > iOS > App**, then fill in the wizard:\n\n  - **Product Name:** `SecondThought`  (no spaces — this becomes your target name)\n  - **Team:** None for now (we are only using the simulator)\n  - **Organization Identifier:** `com.yourname` (anything reverse-DNS; it just has to be unique)\n  - **Interface:** SwiftUI\n  - **Language:** Swift\n  - **Storage:** SwiftData   ← important, this wires up the database for you\n  - **Host in CloudKit:** unchecked\n  - **Testing System:** None (you can add it later)\n\nSave it somewhere you'll find it, e.g. `~/Documents/Deep24/SecondThought`.\n\nXcode generates a sample `Item` model and a ContentView list. Pick the **iPhone 17** simulator in the toolbar's device menu, then press **Cmd+R**. Wait for the app to launch. You should see an empty list with a `+` button that adds timestamps. That template app is now yours to gut — we replace `Item` with `Urge` in the next step.",
+        "done_when": "The template app builds and runs on the iPhone 17 simulator, and tapping + adds a timestamp row.",
+        "why_it_matters": "Running the untouched template first is a debugging trick, not a formality: it proves your toolchain, signing, and simulator all work. If you write 200 lines and THEN hit a build error, you won't know whether it's your code or your setup. Now you'll know it's your code.",
+        "expected_result": "An empty SecondThought app running on the iPhone 17 simulator, built from the SwiftData template.",
+        "notes": "If Storage: SwiftData was missed, it is recoverable — add .modelContainer(for: Urge.self) to the App scene manually in step 4.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "App runs",
+        "coach_prompt": "This is Xcode GUI work — guide them through the New Project wizard field by field and let them screenshot if a field looks different. The key choices are Interface: SwiftUI and Storage: SwiftData. Make them run it (Cmd+R) and see the template app before moving on.",
+        "agent_capability": {
+          "agent_policy": "human_only",
+          "agent_rationale": "Creating an Xcode project is GUI work in Xcode's New Project wizard, and the save location and organization identifier are the user's to choose.",
+          "agent_alternative_route_allowed": false,
+          "agent_requires": [
+            "user_judgment"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_4",
+      "title": "Model the urge: what an impulse actually is, in data",
+      "goal": "Define the Urge SwiftData model that every other screen reads from.",
+      "coach_prompt": "This is the load-bearing step. Get the fields right — especially readyAt being derived from createdAt + cooldown, not stored. Offer to write the file for them; it is pure code with no judgment calls.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Model compiles"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "Urge.swift exists and the project builds with no errors (Cmd+B)."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "Build errors here are almost always: Item.swift still referenced in ContentView, or a missing `import SwiftData`. Ask for the exact red error text."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_5",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_2",
+        "parent_phase_title": "Build the Core Loop",
+        "phase_type": "workflow",
+        "optional": false,
+        "depends_on": [
+          "step_3"
+        ],
+        "instructions": "Delete `Item.swift` (right-click > Delete > Move to Trash). Create **`Urge.swift`** (File > New > File > Swift File):\n\n```swift\nimport Foundation\nimport SwiftData\n\nenum Verdict: String, Codable, CaseIterable {\n    case waiting, bought, skipped\n}\n\n@Model\nfinal class Urge {\n    var id: UUID = UUID()\n    var itemName: String = \"\"\n    var price: Double = 0\n    var link: String = \"\"\n    var reason: String = \"\"          // why I want it, in my own words\n    var wantLevel: Int = 5            // 1-10, how badly I wanted it AT THE TIME\n    var createdAt: Date = Date.now\n    var cooldownSeconds: Double = 86_400\n    var verdictRaw: String = Verdict.waiting.rawValue\n    var decidedAt: Date? = nil\n\n    init(itemName: String, price: Double, link: String = \"\", reason: String = \"\",\n         wantLevel: Int = 5, cooldownSeconds: Double) {\n        self.id = UUID()\n        self.itemName = itemName\n        self.price = price\n        self.link = link\n        self.reason = reason\n        self.wantLevel = wantLevel\n        self.createdAt = .now\n        self.cooldownSeconds = cooldownSeconds\n        self.verdictRaw = Verdict.waiting.rawValue\n    }\n\n    var verdict: Verdict {\n        get { Verdict(rawValue: verdictRaw) ?? .waiting }\n        set { verdictRaw = newValue.rawValue }\n    }\n\n    /// Derived, never stored — the single source of truth for the timer.\n    var readyAt: Date { createdAt.addingTimeInterval(cooldownSeconds) }\n    var isRipe: Bool { verdict == .waiting && Date.now >= readyAt }\n    var isWaiting: Bool { verdict == .waiting && Date.now < readyAt }\n}\n```\n\nThen in `SecondThoughtApp.swift` make sure the scene has the container:\n\n```swift\nimport SwiftUI\nimport SwiftData\n\n@main\nstruct SecondThoughtApp: App {\n    var body: some Scene {\n        WindowGroup { RootView() }          // we build RootView in step 6\n            .modelContainer(for: Urge.self)\n    }\n}\n```\n\nCooldown presets to offer later: 20 minutes (1200), 24 hours (86400), 72 hours (259200), 30 days (2592000).",
+        "done_when": "Urge.swift compiles, Item.swift is gone, and the app's scene uses .modelContainer(for: Urge.self).",
+        "why_it_matters": "Two design choices here do real work. **`readyAt` is computed, not stored** — so a timer can never drift out of sync with the data, and there is no 'update the countdown' code to get wrong. And **`wantLevel` is captured at logging time and never updated** — that number is the evidence you use against yourself later, when the app shows you 'you rated this a 9 out of 10, three days ago' and you can no longer remember why. Default values on every property also keep SwiftData migrations painless when you add a field later.",
+        "expected_result": "A compiling Urge model with a derived readyAt, and a SwiftData container attached to the app scene.",
+        "notes": "SwiftData docs: https://developer.apple.com/documentation/swiftdata — @Model classes must be final. Giving every stored property a default value is what makes later lightweight migrations 'just work'.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Model compiles",
+        "coach_prompt": "This is the load-bearing step. Get the fields right — especially readyAt being derived from createdAt + cooldown, not stored. Offer to write the file for them; it is pure code with no judgment calls.",
+        "agent_capability": {
+          "agent_policy": "agent_allowed",
+          "agent_rationale": "Writing Urge.swift and wiring the model container is deterministic code with no credentials or private judgment involved.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "created_files",
+            "command_output"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_5",
+      "title": "Build the 'Log an urge' form",
+      "goal": "Create the entry screen that captures a new impulse in under 20 seconds.",
+      "coach_prompt": "Guide the code, but push hard on one product point: the form must be fast. If logging an urge takes longer than buying the thing, the app loses. Item + price + cooldown are required; reason and want level are the psychologically important extras.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Form works"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "LogUrgeView.swift compiles."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "Saving the form inserts an Urge (verify in step 6 when the list renders)."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "If `Task { await Notifier... }` errors, it's because step 7 hasn't happened yet — comment that line out."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_6",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_2",
+        "parent_phase_title": "Build the Core Loop",
+        "phase_type": "workflow",
+        "optional": false,
+        "depends_on": [
+          "step_4"
+        ],
+        "instructions": "Create **`LogUrgeView.swift`**:\n\n```swift\nimport SwiftUI\nimport SwiftData\n\nstruct LogUrgeView: View {\n    @Environment(\\.modelContext) private var context\n    @Environment(\\.dismiss) private var dismiss\n\n    @State private var itemName = \"\"\n    @State private var price = \"\"\n    @State private var link = \"\"\n    @State private var reason = \"\"\n    @State private var wantLevel = 5.0\n    @State private var cooldown: Double = 86_400\n\n    private let presets: [(String, Double)] = [\n        (\"20 minutes\", 1_200), (\"24 hours\", 86_400),\n        (\"72 hours\", 259_200), (\"30 days\", 2_592_000)\n    ]\n\n    var body: some View {\n        NavigationStack {\n            Form {\n                Section(\"What do you want?\") {\n                    TextField(\"Item\", text: $itemName)\n                    TextField(\"Price\", text: $price).keyboardType(.decimalPad)\n                    TextField(\"Link (optional)\", text: $link).textInputAutocapitalization(.never)\n                }\n                Section(\"Why do you want it?\") {\n                    TextField(\"Write it out. Future you reads this.\", text: $reason, axis: .vertical)\n                        .lineLimit(3...6)\n                    VStack(alignment: .leading) {\n                        Text(\"How badly, right now: \\(Int(wantLevel))/10\")\n                        Slider(value: $wantLevel, in: 1...10, step: 1)\n                    }\n                }\n                Section(\"Wait how long?\") {\n                    Picker(\"Cooldown\", selection: $cooldown) {\n                        ForEach(presets, id: \\.1) { Text($0.0).tag($0.1) }\n                    }.pickerStyle(.segmented)\n                }\n            }\n            .navigationTitle(\"Log an urge\")\n            .toolbar {\n                ToolbarItem(placement: .confirmationAction) {\n                    Button(\"Start timer\") { save() }\n                        .disabled(itemName.trimmingCharacters(in: .whitespaces).isEmpty)\n                }\n                ToolbarItem(placement: .cancellationAction) {\n                    Button(\"Cancel\") { dismiss() }\n                }\n            }\n        }\n    }\n\n    private func save() {\n        let urge = Urge(\n            itemName: itemName.trimmingCharacters(in: .whitespaces),\n            price: Double(price) ?? 0,\n            link: link, reason: reason,\n            wantLevel: Int(wantLevel),\n            cooldownSeconds: cooldown\n        )\n        context.insert(urge)\n        try? context.save()\n\n        // Copy out plain values before the Task — never hand a SwiftData model\n        // to another concurrency context. (Added in step 7; comment out for now.)\n        let id = urge.id, name = urge.itemName, why = urge.reason\n        let level = urge.wantLevel, readyAt = urge.readyAt\n        Task {\n            await Notifier.schedule(id: id, itemName: name, reason: why,\n                                    wantLevel: level, readyAt: readyAt)\n        }\n        dismiss()\n    }\n}\n```\n\nComment out the `Task { ... }` block for now — you'll add `Notifier` in step 7 and uncomment it then.",
+        "done_when": "LogUrgeView compiles and you can present it, type an item, and save an Urge into SwiftData.",
+        "why_it_matters": "The 'why do you want it' field is not filler — it is the mechanism. Writing the reason down forces you to articulate a want you would normally act on wordlessly, and it gives the future prompt something to quote back at you. A cooldown timer alone is a speed bump; a cooldown timer plus your own reasoning in your own handwriting is an argument you have to answer.",
+        "expected_result": "A working entry form that inserts an Urge and starts its cooldown.",
+        "notes": "",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Form works",
+        "coach_prompt": "Guide the code, but push hard on one product point: the form must be fast. If logging an urge takes longer than buying the thing, the app loses. Item + price + cooldown are required; reason and want level are the psychologically important extras.",
+        "agent_capability": {
+          "agent_policy": "agent_allowed",
+          "agent_rationale": "This is a self-contained SwiftUI view with no credentials, permissions, or subjective calls.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "created_files",
+            "command_output"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_6",
+      "title": "Build the waiting list with a live countdown",
+      "goal": "Show every cooling-off item with a real ticking timer, and surface the ones that are ready to decide.",
+      "coach_prompt": "The one thing to get right: use Text(timerInterval:countsDown:) instead of hand-rolling a Timer. Explain why — it's the difference between a smooth countdown and a battery-draining redraw loop.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Countdown ticks"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "Logging an urge makes it appear in 'Cooling off' with a counting-down timer."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "Setting a 20-minute cooldown and waiting shows the item move to the 'Time's up' section (or test with a short cooldown in step 10)."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "If the list is empty after saving, the @Query type or the modelContainer(for:) type is mismatched — both must be Urge."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_7",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_2",
+        "parent_phase_title": "Build the Core Loop",
+        "phase_type": "workflow",
+        "optional": false,
+        "depends_on": [
+          "step_5"
+        ],
+        "instructions": "Create **`RootView.swift`** — the app's home screen:\n\n```swift\nimport SwiftUI\nimport SwiftData\n\nstruct RootView: View {\n    @Environment(\\.modelContext) private var context\n    @Query(sort: \\Urge.createdAt, order: .reverse) private var urges: [Urge]\n    @State private var showingLog = false\n    @State private var deciding: Urge?\n\n    private var waiting: [Urge] { urges.filter(\\.isWaiting) }\n    private var ripe: [Urge]    { urges.filter(\\.isRipe) }\n\n    var body: some View {\n        NavigationStack {\n            List {\n                if !ripe.isEmpty {\n                    Section(\"Time's up — decide\") {\n                        ForEach(ripe) { urge in\n                            Button { deciding = urge } label: {\n                                HStack {\n                                    VStack(alignment: .leading) {\n                                        Text(urge.itemName).font(.headline)\n                                        Text(\"Still want it?\").foregroundStyle(.secondary)\n                                    }\n                                    Spacer()\n                                    Image(systemName: \"chevron.right\")\n                                }\n                            }\n                        }\n                    }\n                }\n\n                Section(\"Cooling off\") {\n                    if waiting.isEmpty {\n                        ContentUnavailableView(\"Nothing on ice\",\n                            systemImage: \"hourglass\",\n                            description: Text(\"Next time you want to buy something, log it here first.\"))\n                    }\n                    ForEach(waiting) { urge in\n                        VStack(alignment: .leading, spacing: 4) {\n                            HStack {\n                                Text(urge.itemName).font(.headline)\n                                Spacer()\n                                Text(urge.price, format: .currency(code: \"USD\"))\n                                    .foregroundStyle(.secondary)\n                            }\n                            // Live countdown, no Timer needed:\n                            Text(timerInterval: Date.now...urge.readyAt, countsDown: true)\n                                .font(.title3.monospacedDigit())\n                                .foregroundStyle(.tint)\n                        }\n                    }\n                    .onDelete { idx in\n                        for i in idx { context.delete(waiting[i]) }\n                    }\n                }\n            }\n            .navigationTitle(\"Second Thought\")\n            .toolbar {\n                ToolbarItem(placement: .primaryAction) {\n                    Button(\"Log an urge\", systemImage: \"plus\") { showingLog = true }\n                }\n            }\n            .sheet(isPresented: $showingLog) { LogUrgeView() }\n            .sheet(item: $deciding) { urge in VerdictView(urge: urge) }   // step 8\n        }\n    }\n}\n```\n\n`@Query` re-runs automatically whenever SwiftData changes, so the list updates the instant you save the form. Comment out the `.sheet(item: $deciding)` line until you build VerdictView in step 8. (`.sheet(item:)` needs `Urge` to be Identifiable — it already is, for free, because every `@Model` conforms to `PersistentModel`.)",
+        "done_when": "The app shows a live, ticking countdown for each urge you log, and finished ones move into a 'Time's up' section.",
+        "why_it_matters": "`Text(timerInterval:countsDown:)` hands the countdown to the system, which renders it efficiently without your view redrawing every second. The naive version — a `Timer.publish` that reassigns state 60 times a minute — will redraw your whole list, tank scrolling, and drain battery. This is the single most common performance mistake in timer apps, and you just avoided it.",
+        "expected_result": "A home screen with real countdowns, an empty state, and a 'decide now' section that fills up as timers expire.",
+        "notes": "Text(timerInterval:) reference: https://developer.apple.com/documentation/swiftui/text/init(timerinterval:pausetime:countsdown:showshours:)",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Countdown ticks",
+        "coach_prompt": "The one thing to get right: use Text(timerInterval:countsDown:) instead of hand-rolling a Timer. Explain why — it's the difference between a smooth countdown and a battery-draining redraw loop.",
+        "agent_capability": {
+          "agent_policy": "agent_allowed",
+          "agent_rationale": "Pure SwiftUI view code driven by the model from step 4; nothing here needs user access or judgment.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "created_files",
+            "command_output"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_7",
+      "title": "Schedule the notification that asks the question",
+      "goal": "Get iOS to re-open the conversation when the cooldown ends, even if the app is closed.",
+      "coach_prompt": "Two things to separate clearly: the CODE (agent can write it all) and the PERMISSION TAP (only the user can hit Allow on the simulator alert). Make sure they actually tap Allow — if they dismiss it, nothing will fire and they'll think the code is broken.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Permission granted"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The notification permission alert appeared and the user tapped Allow."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "After logging an urge, `Notifier.schedule` runs without error."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "No alert at all usually means the app was already installed and denied earlier — erase the simulator (Device > Erase All Content and Settings) and re-run. Local notifications DO work in the simulator; only push (APNs) needs extra setup."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_8",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_3",
+        "parent_phase_title": "The Timer & The Second Ask",
+        "phase_type": "workflow",
+        "optional": false,
+        "depends_on": [
+          "step_5",
+          "step_6"
+        ],
+        "instructions": "Create **`Notifier.swift`**:\n\n```swift\nimport Foundation\nimport UserNotifications\n\nenum Notifier {\n    static let categoryID = \"URGE_READY\"\n    static let stillWantID = \"STILL_WANT\"\n    static let letGoID = \"LET_GO\"\n\n    /// Registers the two buttons that appear when you long-press the notification.\n    static func configureCategories() {\n        let still = UNNotificationAction(identifier: stillWantID,\n                                         title: \"I still want it\", options: [.foreground])\n        let letGo = UNNotificationAction(identifier: letGoID,\n                                         title: \"Let it go\", options: [.destructive])\n        let category = UNNotificationCategory(identifier: categoryID,\n                                              actions: [still, letGo],\n                                              intentIdentifiers: [])\n        UNUserNotificationCenter.current().setNotificationCategories([category])\n    }\n\n    @discardableResult\n    static func requestPermission() async -> Bool {\n        (try? await UNUserNotificationCenter.current()\n            .requestAuthorization(options: [.alert, .sound, .badge])) ?? false\n    }\n\n    /// Takes plain values, not the Urge object — see 'why this matters' below.\n    static func schedule(id: UUID, itemName: String, reason: String,\n                         wantLevel: Int, readyAt: Date) async {\n        let content = UNMutableNotificationContent()\n        content.title = \"Still want the \\(itemName)?\"\n        content.body = reason.isEmpty\n            ? \"You rated this \\(wantLevel)/10. Do you still need it?\"\n            : \"You said: \\u{201C}\\(reason)\\u{201D} — do you still need it?\"\n        content.sound = .default\n        content.categoryIdentifier = categoryID\n        content.userInfo = [\"urgeID\": id.uuidString]\n\n        let seconds = max(1, readyAt.timeIntervalSinceNow)\n        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)\n        let request = UNNotificationRequest(identifier: id.uuidString,\n                                            content: content, trigger: trigger)\n        try? await UNUserNotificationCenter.current().add(request)\n    }\n\n    /// Cancel if the user decides early or deletes the urge.\n    static func cancel(id: UUID) {\n        UNUserNotificationCenter.current()\n            .removePendingNotificationRequests(withIdentifiers: [id.uuidString])\n    }\n}\n```\n\nAsk for permission once, at launch. In `SecondThoughtApp.swift`:\n\n```swift\nWindowGroup {\n    RootView()\n        .task {\n            Notifier.configureCategories()\n            await Notifier.requestPermission()\n        }\n}\n.modelContainer(for: Urge.self)\n```\n\nNow uncomment the `Task { await Notifier.schedule(...) }` block in `LogUrgeView.save()`.\n\nAlso cancel the pending notification when an urge is swiped away — in `RootView`'s `.onDelete`:\n\n```swift\n.onDelete { idx in\n    for i in idx {\n        Notifier.cancel(id: waiting[i].id)\n        context.delete(waiting[i])\n    }\n}\n```\n\nRun the app. **iOS will show a permission alert — you must tap \"Allow\".** If you tap \"Don't Allow\", no notification will ever fire and the app will look broken. (Reset it any time with: Simulator > Device > Erase All Content and Settings.)",
+        "done_when": "The app asks for notification permission on first launch, you tapped Allow, and logging an urge schedules a notification.",
+        "why_it_matters": "The notification IS the product. A cooling-off app that only works when you remember to open it has solved nothing — the whole point is that the app comes back to you at the moment the urge has faded, when you are best positioned to say no. Two engineering details earn their keep here: the notification id is the urge's own UUID (so cancelling is trivial and you can never double-schedule), and `schedule` takes plain values rather than the `Urge` object — SwiftData models are not Sendable, so passing one into a `Task` is exactly the kind of thing that compiles today and fails the moment you turn on Swift 6 strict concurrency.",
+        "expected_result": "A permission-granted app that schedules a real iOS notification at the end of each cooldown.",
+        "notes": "UNUserNotificationCenter: https://developer.apple.com/documentation/usernotifications/unusernotificationcenter — non-repeating time-interval triggers can be short; repeating ones must be >= 60s.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Permission granted",
+        "coach_prompt": "Two things to separate clearly: the CODE (agent can write it all) and the PERMISSION TAP (only the user can hit Allow on the simulator alert). Make sure they actually tap Allow — if they dismiss it, nothing will fire and they'll think the code is broken.",
+        "agent_capability": {
+          "agent_policy": "agent_maybe",
+          "agent_rationale": "An agent can write Notifier.swift and wire it into the app scene, but only the user can tap Allow on the iOS permission alert in the simulator.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [
+            {
+              "kind": "mac_permission",
+              "default_owner": "user",
+              "agent_can_prepare": true,
+              "agent_may_continue_if_already_authenticated": true,
+              "resume_check": "User confirms they tapped Allow on the notification permission alert in the simulator."
+            }
+          ],
+          "agent_done_evidence": [
+            "created_files",
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_8",
+      "title": "Build The Verdict — the second ask",
+      "goal": "Write the screen that asks 'do you still need it?' and records the answer.",
+      "coach_prompt": "This is the emotional core. Coach them to show the ORIGINAL reason and want level back to the user, and to make 'Let it go' the visually easier button. Also wire the notification tap so it opens straight to this screen.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Verdict works"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "Choosing 'let it go' or 'still want it' sets the verdict and the urge leaves the waiting list."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The urge's decidedAt timestamp is set."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "If the verdict doesn't stick, check that resolve() sets urge.verdict (not verdictRaw directly) and calls try? context.save(). If the sheet never opens, `deciding` is not being set — that Button in the 'Time's up' section is the trigger."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_9",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_3",
+        "parent_phase_title": "The Timer & The Second Ask",
+        "phase_type": "workflow",
+        "optional": false,
+        "depends_on": [
+          "step_6",
+          "step_7"
+        ],
+        "instructions": "Create **`VerdictView.swift`**:\n\n```swift\nimport SwiftUI\nimport SwiftData\n\nstruct VerdictView: View {\n    @Environment(\\.modelContext) private var context\n    @Environment(\\.dismiss) private var dismiss\n    let urge: Urge\n\n    var body: some View {\n        NavigationStack {\n            VStack(spacing: 24) {\n                Spacer()\n                Text(\"Do you still need\\n\\(urge.itemName)?\")\n                    .font(.largeTitle.bold())\n                    .multilineTextAlignment(.center)\n\n                VStack(spacing: 8) {\n                    Text(\"\\(urge.createdAt, style: .relative) ago you said:\")\n                    if !urge.reason.isEmpty {\n                        Text(\"\\u{201C}\\(urge.reason)\\u{201D}\")\n                            .italic()\n                            .multilineTextAlignment(.center)\n                    }\n                    Text(\"You wanted it \\(urge.wantLevel)/10.\")\n                        .foregroundStyle(.secondary)\n                }\n                .font(.callout)\n                .padding(.horizontal)\n\n                Spacer()\n\n                Button {\n                    resolve(.skipped)\n                } label: {\n                    Label(\"No — let it go\", systemImage: \"wind\")\n                        .frame(maxWidth: .infinity)\n                }\n                .buttonStyle(.borderedProminent)\n                .controlSize(.large)\n\n                Button(\"Yes, I still want it\") { resolve(.bought) }\n                    .buttonStyle(.bordered)\n                    .controlSize(.large)\n                    .frame(maxWidth: .infinity)\n\n                Text(\"Saying yes is allowed. The point was to decide on purpose.\")\n                    .font(.footnote)\n                    .foregroundStyle(.secondary)\n            }\n            .padding()\n            .navigationTitle(urge.price.formatted(.currency(code: \"USD\")))\n            .navigationBarTitleDisplayMode(.inline)\n        }\n    }\n\n    private func resolve(_ verdict: Verdict) {\n        urge.verdict = verdict\n        urge.decidedAt = .now\n        try? context.save()\n        Notifier.cancel(id: urge.id)\n        dismiss()\n    }\n}\n```\n\nUncomment the `.sheet(item: $deciding)` line in RootView.\n\n**Optional but great:** make tapping the notification open straight into this screen. Add a delegate in `SecondThoughtApp.swift` that conforms to `UNUserNotificationCenterDelegate`, implements `userNotificationCenter(_:didReceive:)`, reads `response.notification.request.content.userInfo[\"urgeID\"]`, and publishes it to an `@Observable` router that RootView watches to set `deciding`. Also implement `willPresent` returning `[.banner, .sound]` so notifications show even while the app is open.",
+        "done_when": "Tapping a ripe urge opens The Verdict, and choosing an answer records it and removes the item from the waiting list.",
+        "why_it_matters": "Showing people their own past reasoning is the active ingredient. In the moment of wanting, you feel like you *need* it; days later, reading your own words — 'because it was on sale' — is often enough on its own. Note the deliberate design: 'Let it go' is the prominent button and 'yes' is still allowed without shame. An app that punishes you for buying things makes you stop opening the app, and an app you don't open can't help you.",
+        "expected_result": "A working second-ask screen that closes the loop on every urge.",
+        "notes": "All Swift in steps 4-9 was compiled against the iPhoneSimulator26.5 SDK in Swift 6 language mode: zero errors, zero warnings. Note Text(_:style:) + Text(_:) concatenation is deprecated in iOS 26 — use string interpolation, as above.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Verdict works",
+        "coach_prompt": "This is the emotional core. Coach them to show the ORIGINAL reason and want level back to the user, and to make 'Let it go' the visually easier button. Also wire the notification tap so it opens straight to this screen.",
+        "agent_capability": {
+          "agent_policy": "agent_allowed",
+          "agent_rationale": "SwiftUI view plus a notification-response handler; no credentials or private judgment needed.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "created_files",
+            "command_output"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_9",
+      "title": "Add the payoff screen: money not spent",
+      "goal": "Show the running total of what saying 'no' has been worth.",
+      "coach_prompt": "Keep this simple — three numbers. The one that matters is money not spent, because it converts an absence of action into a visible reward.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Stats show"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The Saved tab shows a non-zero total after you skip at least one test urge."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "Zero total? Make sure resolve(.skipped) is actually saving — check the verdict is persisted with try? context.save()."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_10",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_4",
+        "parent_phase_title": "Run, Test & Polish",
+        "phase_type": "testing",
+        "optional": true,
+        "depends_on": [
+          "step_8"
+        ],
+        "instructions": "Create **`StatsView.swift`** and add it as a second tab (wrap RootView and StatsView in a `TabView`):\n\n```swift\nimport SwiftUI\nimport SwiftData\n\nstruct StatsView: View {\n    @Query private var urges: [Urge]\n\n    private var skipped: [Urge] { urges.filter { $0.verdict == .skipped } }\n    private var bought: [Urge]  { urges.filter { $0.verdict == .bought } }\n    private var saved: Double   { skipped.reduce(0) { $0 + $1.price } }\n    private var resistRate: Double {\n        let decided = skipped.count + bought.count\n        return decided == 0 ? 0 : Double(skipped.count) / Double(decided)\n    }\n\n    var body: some View {\n        NavigationStack {\n            List {\n                Section {\n                    VStack(spacing: 4) {\n                        Text(saved, format: .currency(code: \"USD\"))\n                            .font(.system(size: 44, weight: .bold, design: .rounded))\n                            .contentTransition(.numericText())\n                        Text(\"not spent\").foregroundStyle(.secondary)\n                    }\n                    .frame(maxWidth: .infinity)\n                    .padding(.vertical, 8)\n                }\n                Section(\"Track record\") {\n                    LabeledContent(\"Urges resisted\", value: \"\\(skipped.count)\")\n                    LabeledContent(\"Bought anyway\", value: \"\\(bought.count)\")\n                    LabeledContent(\"Resist rate\", value: resistRate.formatted(.percent.precision(.fractionLength(0))))\n                }\n                Section(\"Let go\") {\n                    ForEach(skipped) { urge in\n                        LabeledContent(urge.itemName,\n                                       value: urge.price.formatted(.currency(code: \"USD\")))\n                    }\n                }\n            }\n            .navigationTitle(\"Saved\")\n        }\n    }\n}\n```\n\nNow wire both screens together in `SecondThoughtApp.swift` — this is the finished app entry point:\n\n```swift\nimport SwiftUI\nimport SwiftData\n\n@main\nstruct SecondThoughtApp: App {\n    var body: some Scene {\n        WindowGroup {\n            TabView {\n                RootView()\n                    .tabItem { Label(\"Waiting\", systemImage: \"hourglass\") }\n                StatsView()\n                    .tabItem { Label(\"Saved\", systemImage: \"banknote\") }\n            }\n            .task {\n                Notifier.configureCategories()\n                await Notifier.requestPermission()\n            }\n        }\n        .modelContainer(for: Urge.self)\n    }\n}\n```",
+        "done_when": "A Saved tab shows total money not spent, urges resisted, bought anyway, and a resist rate.",
+        "why_it_matters": "Resisting a purchase produces nothing — no package, no dopamine, no evidence. That asymmetry is exactly why impulse control is hard: buying is rewarded instantly and not-buying is rewarded with silence. This screen manufactures the missing reward. It is the reason people keep using the app after week one.",
+        "expected_result": "A stats tab that turns every 'no' into a visible, accumulating number.",
+        "notes": "",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Stats show",
+        "coach_prompt": "Keep this simple — three numbers. The one that matters is money not spent, because it converts an absence of action into a visible reward.",
+        "agent_capability": {
+          "agent_policy": "agent_allowed",
+          "agent_rationale": "Read-only SwiftUI view over existing data; fully mechanical.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "created_files",
+            "command_output"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_10",
+      "title": "Test the whole loop with a 60-second cooldown",
+      "goal": "Prove the end-to-end loop works — log, wait, get notified, decide — before you trust it with real money.",
+      "coach_prompt": "This is the real test. Have them temporarily add a 1-minute preset, log an urge, background the app, and WAIT for the banner. Backgrounding matters: notifications behave differently when the app is foregrounded.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Loop verified"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The notification banner appears on the simulator while the app is backgrounded."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "Tapping the notification opens the app and resolving the urge updates the Saved tab."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "No banner: (a) permission was denied — erase the simulator and re-run; (b) the app was in the foreground — implement willPresent returning [.banner, .sound], or just background it with Cmd+Shift+H; (c) schedule() was never called — check the Notifier line in save() is uncommented."
+      },
+      "allowed_jumps": [
+        "step_7",
+        "step_8"
+      ],
+      "next_step_id": "step_11",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_4",
+        "parent_phase_title": "Run, Test & Polish",
+        "phase_type": "testing",
+        "optional": false,
+        "depends_on": [
+          "step_8"
+        ],
+        "instructions": "Temporarily add a test preset to `LogUrgeView.presets`:\n\n    (\"1 minute\", 60),\n\nThen run the full loop on the simulator:\n\n  1. Cmd+R to build and run. Tap **Allow** on the permission alert if it appears.\n  2. Log an urge: item \"AirPods Max\", price 549, reason \"my current ones are fine but these are shiny\", want level 9, cooldown **1 minute**.\n  3. Confirm the countdown ticks down in the list.\n  4. **Background the app** — Cmd+Shift+H (Home), or Cmd+L to lock the simulator. This is the important part: a notification you only see while staring at the app proves nothing.\n  5. Wait ~60 seconds. The banner should appear: *\"Still want the AirPods Max?\"* with your own reason quoted.\n  6. Long-press the banner. You should see **I still want it** and **Let it go**.\n  7. Tap the banner. The app should open on The Verdict screen for that item.\n  8. Tap **No — let it go**. Check the Saved tab: $549 not spent, 1 urge resisted.\n\nFrom the command line you can also verify the build cleanly:\n\n    xcodebuild -scheme SecondThought \\\n      -destination 'platform=iOS Simulator,name=iPhone 17' build\n\n**Remove the 1-minute preset when you're done testing** — a 60-second cooldown does not stop anybody from buying anything.",
+        "done_when": "You logged an urge, backgrounded the app, received the notification, tapped through to The Verdict, and saw the money land in Saved.",
+        "why_it_matters": "Every part of this app can look correct and still fail at exactly one place: the notification not firing when the app is closed. That is the single point of failure for the entire product, and it is invisible until you test it backgrounded. Testing with a 1-minute cooldown is how you find that out in a minute instead of a day.",
+        "expected_result": "A verified end-to-end loop: log → wait → notify → decide → saved.",
+        "notes": "Simulator shortcuts: Cmd+Shift+H = Home, Cmd+L = Lock. Local notifications work fully in the simulator; only remote push needs APNs setup.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Loop verified",
+        "coach_prompt": "This is the real test. Have them temporarily add a 1-minute preset, log an urge, background the app, and WAIT for the banner. Backgrounding matters: notifications behave differently when the app is foregrounded.",
+        "agent_capability": {
+          "agent_policy": "agent_maybe",
+          "agent_rationale": "An agent can run the xcodebuild command, boot the simulator, and add or remove the test preset, but tapping through the simulator UI and confirming the banner appeared is the user's to verify.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [
+            {
+              "kind": "mac_permission",
+              "default_owner": "user",
+              "agent_can_prepare": true,
+              "agent_may_continue_if_already_authenticated": true,
+              "resume_check": "User confirms the notification banner appeared while the app was backgrounded."
+            }
+          ],
+          "agent_done_evidence": [
+            "command_output",
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_11",
+      "title": "Make it feel like a real app",
+      "goal": "Add the finishing layer: icon, tint, empty states, and the small copy that makes people trust it.",
+      "coach_prompt": "Polish is optional but this is where the app stops feeling like a tutorial. Let the user pick the look — that's taste, not engineering. Offer to do the mechanical parts (asset catalog wiring, tint, haptics).",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "Polished"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The app has a custom accent color and an app icon."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "You have chosen the exact wording of the second-ask prompt."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "If the icon shows as a white square, the 1024x1024 PNG has an alpha channel — flatten it (App Store icons must be fully opaque)."
+      },
+      "allowed_jumps": [],
+      "next_step_id": "step_12",
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_4",
+        "parent_phase_title": "Run, Test & Polish",
+        "phase_type": "testing",
+        "optional": true,
+        "depends_on": [
+          "step_10"
+        ],
+        "instructions": "Mechanical (an agent can do these):\n  - **Accent color:** Assets.xcassets > AccentColor > pick a calm color. Avoid red/orange — you're building a calm-down app, not an alarm.\n  - **App icon:** Assets.xcassets > AppIcon. A single 1024x1024 PNG is all Xcode 26 needs.\n  - **Haptic on 'let it go':** `UIImpactFeedbackGenerator(style: .soft).impactOccurred()` — small reward for the good choice.\n  - **Sort ripe urges first** and show the oldest waiting item at the top.\n  - **Guard the empty state** — you already used `ContentUnavailableView`, make sure the Saved tab has one too.\n\nTaste (yours to decide):\n  - The name that appears under the icon (target > Display Name — this one is safe to change).\n  - The tone of the second ask. \"Do you still need it?\" is neutral. \"Still want it?\" is softer. \"You said you'd wait.\" is sharper. Pick the one you'd actually listen to.\n  - Default cooldown. 24 hours is the researched standard; 72 hours is stricter; 30 days is the classic rule for anything over ~$100.\n\nOne high-value addition if you want it: a **Wish List Graveyard** — a view of everything you let go, with a total. It doubles as the proof that the app works.",
+        "done_when": "The app has an icon, a calm accent color, sensible empty states, and second-ask copy you personally respond to.",
+        "why_it_matters": "The tone of that one prompt determines whether you obey the app or start ignoring it. Too preachy and you delete it; too soft and it doesn't hold. Only you know which voice you'd actually listen to at 11pm with a full cart — which is exactly why this is your call and not the agent's.",
+        "expected_result": "A polished app you'd be willing to keep on your home screen.",
+        "notes": "",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "Polished",
+        "coach_prompt": "Polish is optional but this is where the app stops feeling like a tutorial. Let the user pick the look — that's taste, not engineering. Offer to do the mechanical parts (asset catalog wiring, tint, haptics).",
+        "agent_capability": {
+          "agent_policy": "agent_maybe",
+          "agent_rationale": "An agent can wire the asset catalog, tint, haptics and sorting, but the icon, the color, and the wording of the prompt are subjective calls the user should make.",
+          "agent_alternative_route_allowed": true,
+          "agent_requires": [
+            "shell",
+            "repo_context"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "created_files",
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    },
+    {
+      "step_id": "step_12",
+      "title": "Get it onto your actual phone",
+      "goal": "Move the app off the simulator and onto the device where the impulses actually happen.",
+      "coach_prompt": "Stop here for anything involving the Apple ID, the developer program, or payment. Explain the free route (7-day provisioning) versus the paid route ($99/yr) honestly, then let the user decide.",
+      "action": {
+        "kind": "manual",
+        "command_id": null,
+        "command_ids": []
+      },
+      "completion": {
+        "mode": "manual",
+        "auto_next_on_pass": false,
+        "requires_manual_confirm": true,
+        "confirm_button_label": "On my phone"
+      },
+      "success_criteria": [
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "The app launches on your physical iPhone."
+        },
+        {
+          "source": "manual",
+          "command_id": null,
+          "rule": "You have logged at least one real (not test) urge on the device."
+        }
+      ],
+      "stuck_support": {
+        "allow_screenshot": true,
+        "hint_template": "'Unable to install' usually means the bundle ID is already taken — change com.yourname to something unique. 'Untrusted Developer' means step 5 was skipped."
+      },
+      "allowed_jumps": [],
+      "next_step_id": null,
+      "metadata": {
+        "deepdive_item_type": "step",
+        "parent_phase_id": "phase_4",
+        "parent_phase_title": "Run, Test & Polish",
+        "phase_type": "testing",
+        "optional": true,
+        "depends_on": [
+          "step_10"
+        ],
+        "instructions": "The simulator cannot help you — you don't shop on your Mac at midnight. Two routes:\n\n**Free — run on your own iPhone (7-day provisioning):**\n  1. Xcode > Settings > Accounts > **+** > Apple ID > sign in with your normal Apple ID (no paid program needed).\n  2. Select the SecondThought target > Signing & Capabilities > **Automatically manage signing** > Team: your personal team.\n  3. Change the bundle identifier to something globally unique, e.g. `com.yourname.secondthought`.\n  4. Plug in your iPhone, pick it in the device menu, Cmd+R.\n  5. On the phone: Settings > General > VPN & Device Management > trust your developer certificate.\n  6. Caveat: a free profile expires after **7 days** — re-run from Xcode to renew it. Fine for personal use.\n\n**Paid — TestFlight / App Store ($99/year Apple Developer Program):**\n  - Needed only if you want the app to keep working without re-installing, or to share it with anyone else.\n  - Product > Archive > Distribute App > TestFlight.\n\n**You must do this part yourself.** It involves your Apple ID password, possibly 2FA, and possibly a payment — an agent must not, and will not, do any of that for you.",
+        "done_when": "The app is installed on your physical iPhone and you have logged a real urge on it.",
+        "why_it_matters": "This is where the app either becomes a real tool or stays a portfolio piece. The impulse happens on your phone, in bed, in the checkout flow — not on your Mac. And be honest about the free route's 7-day expiry: if you know you'll forget to re-sign, the $99 is buying you a habit that survives, not just a certificate.",
+        "expected_result": "Second Thought running on your own iPhone, with one real urge logged and its timer running.",
+        "notes": "Free provisioning profiles expire after 7 days; the Apple Developer Program is US$99/year. Both routes are legitimate — the free one is fine for a personal app.",
+        "verification_mode": "manual",
+        "commands": [],
+        "links": [],
+        "source_refs": [],
+        "confirm_button_label": "On my phone",
+        "coach_prompt": "Stop here for anything involving the Apple ID, the developer program, or payment. Explain the free route (7-day provisioning) versus the paid route ($99/yr) honestly, then let the user decide.",
+        "agent_capability": {
+          "agent_policy": "human_only",
+          "agent_rationale": "Signing in with an Apple ID, completing 2FA, and paying the Apple Developer Program fee are authentication and payment actions the user must perform themselves.",
+          "agent_alternative_route_allowed": false,
+          "agent_requires": [
+            "user_judgment"
+          ],
+          "agent_access_gates": [],
+          "agent_done_evidence": [
+            "user_confirmation"
+          ],
+          "agent_stop_boundary": true
+        }
+      }
+    }
+  ],
+  "commands": []
+}
