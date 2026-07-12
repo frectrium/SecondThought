@@ -66,6 +66,11 @@ Cmd+R may target either depending on the selected scheme destination.
   8's `willPresent` delegate is wired — iOS suppresses foreground banners
   without it. Always test notification delivery by backgrounding the app
   (Cmd+Shift+H / Cmd+L in the simulator), not by watching the app stay open.
+- `NotificationRouter` (`@Observable`) + `NotificationDelegate`
+  (`UNUserNotificationCenterDelegate`) bridge tapped notifications back into
+  SwiftUI: the delegate sets `router.pendingUrgeID`, and `RootView` watches it
+  via `.onChange` to open `VerdictView` in a sheet. `willPresent` returns
+  `[.banner, .sound]` so banners show even in the foreground now too.
 
 ## Testing
 

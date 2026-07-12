@@ -8,6 +8,7 @@ import SwiftData
 
 struct RootView: View {
     @Environment(\.modelContext) private var context
+    @Environment(NotificationRouter.self) private var router
     @Query(sort: \Urge.createdAt, order: .reverse) private var urges: [Urge]
     @State private var showingLog = false
     @State private var deciding: Urge?
@@ -78,7 +79,12 @@ struct RootView: View {
                     }
                 }
                 .sheet(isPresented: $showingLog) { LogUrgeView() }
-                // .sheet(item: $deciding) { urge in VerdictView(urge: urge) }   // wired in step 8
+                .sheet(item: $deciding) { urge in VerdictView(urge: urge) }
+                .onChange(of: router.pendingUrgeID) { _, newID in
+                    guard let newID, let urge = urges.first(where: { $0.id == newID }) else { return }
+                    deciding = urge
+                    router.pendingUrgeID = nil
+                }
             }
         }
     }
