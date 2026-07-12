@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		18FA33A74A08996501C83709 /* UrgeStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28297920DAC422221C3CAC70 /* UrgeStatsTests.swift */; };
 		6013EDCAC4B8A04A8F785543 /* UrgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75423BD212E52BDE427A76E /* UrgeTests.swift */; };
 		D3241D5ED90F668665E7644B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE9DD5C17FB8BEDEC5507E0 /* Foundation.framework */; };
 /* End PBXBuildFile section */
@@ -23,6 +24,7 @@
 
 /* Begin PBXFileReference section */
 		188FB8563003ECF200E69CBB /* SecondThought.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SecondThought.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		28297920DAC422221C3CAC70 /* UrgeStatsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UrgeStatsTests.swift; sourceTree = "<group>"; };
 		C501B88D3D4A81C606331953 /* SecondThoughtTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SecondThoughtTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E75423BD212E52BDE427A76E /* UrgeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UrgeTests.swift; sourceTree = "<group>"; };
 		FAE9DD5C17FB8BEDEC5507E0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -31,6 +33,8 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		188FB8583003ECF200E69CBB /* SecondThought */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = SecondThought;
 			sourceTree = "<group>";
 		};
@@ -86,6 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				E75423BD212E52BDE427A76E /* UrgeTests.swift */,
+				28297920DAC422221C3CAC70 /* UrgeStatsTests.swift */,
 			);
 			path = SecondThoughtTests;
 			sourceTree = "<group>";
@@ -204,6 +209,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6013EDCAC4B8A04A8F785543 /* UrgeTests.swift in Sources */,
+				18FA33A74A08996501C83709 /* UrgeStatsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -71,6 +71,10 @@ Cmd+R may target either depending on the selected scheme destination.
   SwiftUI: the delegate sets `router.pendingUrgeID`, and `RootView` watches it
   via `.onChange` to open `VerdictView` in a sheet. `willPresent` returns
   `[.banner, .sound]` so banners show even in the foreground now too.
+- Stats math (saved total, resist rate, skipped/bought split) lives in a
+  standalone `UrgeStats` struct rather than inline in `StatsView`, purely so
+  it's unit-testable without going through SwiftUI — `StatsView` just reads
+  `UrgeStats(urges: urges)`.
 
 ## Testing
 
@@ -82,7 +86,10 @@ wizard in step 3 was told `Testing System: None`. Run the suite with:
       -destination 'platform=iOS Simulator,name=iPhone 17'
 
 Add a test alongside each pure-logic step (model, verdict resolution, stats
-math) as it's built — don't wait until the end to write these.
+math) as it's built — don't wait until the end to write these. 13 tests as of
+step 9 (`UrgeTests` + `UrgeStatsTests`). New test files need the explicit
+`xcodeproj` gem wiring, unlike app source files — see the git history for the
+add-test-file script pattern.
 
 ## Working agreement
 

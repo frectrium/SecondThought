@@ -16,16 +16,21 @@ struct SecondThoughtApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(router)
-                .task {
-                    let delegate = NotificationDelegate(router: router)
-                    notificationDelegate = delegate
-                    UNUserNotificationCenter.current().delegate = delegate
+            TabView {
+                RootView()
+                    .tabItem { Label("Waiting", systemImage: "hourglass") }
+                StatsView()
+                    .tabItem { Label("Saved", systemImage: "banknote") }
+            }
+            .environment(router)
+            .task {
+                let delegate = NotificationDelegate(router: router)
+                notificationDelegate = delegate
+                UNUserNotificationCenter.current().delegate = delegate
 
-                    Notifier.configureCategories()
-                    await Notifier.requestPermission()
-                }
+                Notifier.configureCategories()
+                await Notifier.requestPermission()
+            }
         }
         .modelContainer(for: Urge.self)
     }
