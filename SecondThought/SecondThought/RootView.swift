@@ -13,8 +13,10 @@ struct RootView: View {
     @State private var showingLog = false
     @State private var deciding: Urge?
 
-    private var waiting: [Urge] { urges.filter(\.isWaiting) }
-    private var ripe: [Urge]    { urges.filter(\.isRipe) }
+    // @Query sorts newest-first for the overall list; oldest-first here is
+    // what you actually want to see next in each section.
+    private var waiting: [Urge] { urges.filter(\.isWaiting).sorted { $0.createdAt < $1.createdAt } }
+    private var ripe: [Urge]    { urges.filter(\.isRipe).sorted { $0.createdAt < $1.createdAt } }
 
     var body: some View {
         // Text(timerInterval:) ticks its own digits for free, but section

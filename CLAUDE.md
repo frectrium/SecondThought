@@ -76,6 +76,27 @@ Cmd+R may target either depending on the selected scheme destination.
   it's unit-testable without going through SwiftUI — `StatsView` just reads
   `UrgeStats(urges: urges)`.
 
+## Polish decisions (step 11)
+
+- **Accent color:** soft blue (`srgb 0.290, 0.565, 0.851`) in
+  `AccentColor.colorset` — user's choice among calm-color options.
+- **Second-ask tone:** softer, "Still want {item}?" — both `VerdictView`'s
+  title and `Notifier`'s notification body/title were aligned to this
+  phrasing (previously "Do you still need it?").
+- **App icon:** user asked for a generated bulb icon rather than supplying
+  their own artwork. Rendered directly with Core Graphics (no SVG tooling was
+  available) via a throwaway script, not checked into the repo — only the
+  resulting PNGs in `Assets.xcassets/AppIcon.appiconset/` are. Master is
+  1024x1024, no alpha (required for App Store). Dark and tinted iOS
+  appearance variants currently reuse the same flat image rather than true
+  dark/monochrome renders — acceptable placeholder, swap later if desired.
+  Mac idiom sizes (16 up to 512, @1x/@2x) were generated from the master via
+  `sips -z`.
+- Haptic feedback (`UIImpactFeedbackGenerator(.soft)`) fires on "let it go"
+  in `VerdictView`, guarded `#if os(iOS)` per the platform note above.
+- `RootView`'s `waiting`/`ripe` arrays are now sorted oldest-`createdAt`-first
+  (the `@Query` itself is newest-first for the full list).
+
 ## Testing
 
 `SecondThoughtTests` is a Swift Testing (`import Testing`, `@Test`/`#expect`)

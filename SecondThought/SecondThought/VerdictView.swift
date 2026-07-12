@@ -5,6 +5,9 @@
 
 import SwiftUI
 import SwiftData
+#if os(iOS)
+import UIKit
+#endif
 
 struct VerdictView: View {
     @Environment(\.modelContext) private var context
@@ -15,7 +18,7 @@ struct VerdictView: View {
         NavigationStack {
             VStack(spacing: 24) {
                 Spacer()
-                Text("Do you still need\n\(urge.itemName)?")
+                Text("Still want\n\(urge.itemName)?")
                     .font(.largeTitle.bold())
                     .multilineTextAlignment(.center)
 
@@ -65,6 +68,11 @@ struct VerdictView: View {
         urge.decidedAt = .now
         try? context.save()
         Notifier.cancel(id: urge.id)
+        if verdict == .skipped {
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            #endif
+        }
         dismiss()
     }
 }

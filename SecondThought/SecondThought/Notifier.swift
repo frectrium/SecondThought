@@ -36,8 +36,8 @@ enum Notifier {
         let content = UNMutableNotificationContent()
         content.title = "Still want the \(itemName)?"
         content.body = reason.isEmpty
-            ? "You rated this \(wantLevel)/10. Do you still need it?"
-            : "You said: \u{201C}\(reason)\u{201D} — do you still need it?"
+            ? "You rated this \(wantLevel)/10. Still want it?"
+            : "You said: \u{201C}\(reason)\u{201D} — still want it?"
         content.sound = .default
         content.categoryIdentifier = categoryID
         content.userInfo = ["urgeID": id.uuidString]
