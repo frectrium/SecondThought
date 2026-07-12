@@ -54,6 +54,18 @@ Cmd+R may target either depending on the selected scheme destination.
   `Timer` — avoids per-second view redraws.
 - Notification scheduling takes plain values (id/name/reason/date), never the
   `Urge` `@Model` object itself — SwiftData models aren't `Sendable`.
+- `RootView`'s "waiting" vs. "ripe" section membership is a plain computed
+  property, so it only re-evaluates when the view body re-runs. Nothing about
+  the underlying SwiftData changes when the clock crosses `readyAt`, so
+  without a periodic nudge an item can sit at "0:00" indefinitely while the
+  app stays open. Fixed by wrapping `RootView`'s body in
+  `TimelineView(.periodic(from: .now, by: 5))` — a 5s cadence is cheap and far
+  coarser than the countdown digits themselves, which still tick every second
+  via `Text(timerInterval:)` independent of this.
+- No notification banner while the app is foregrounded is expected until step
+  8's `willPresent` delegate is wired — iOS suppresses foreground banners
+  without it. Always test notification delivery by backgrounding the app
+  (Cmd+Shift+H / Cmd+L in the simulator), not by watching the app stay open.
 
 ## Testing
 

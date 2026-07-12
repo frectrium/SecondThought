@@ -13,6 +13,10 @@ struct SecondThoughtApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .task {
+                    Notifier.configureCategories()
+                    await Notifier.requestPermission()
+                }
         }
         .modelContainer(for: Urge.self)
     }

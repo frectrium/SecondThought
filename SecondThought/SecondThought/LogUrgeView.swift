@@ -75,13 +75,13 @@ struct LogUrgeView: View {
         try? context.save()
 
         // Copy out plain values before the Task — never hand a SwiftData model
-        // to another concurrency context. (Wired to Notifier in step 7.)
-        // let id = urge.id, name = urge.itemName, why = urge.reason
-        // let level = urge.wantLevel, readyAt = urge.readyAt
-        // Task {
-        //     await Notifier.schedule(id: id, itemName: name, reason: why,
-        //                             wantLevel: level, readyAt: readyAt)
-        // }
+        // to another concurrency context.
+        let id = urge.id, name = urge.itemName, why = urge.reason
+        let level = urge.wantLevel, readyAt = urge.readyAt
+        Task {
+            await Notifier.schedule(id: id, itemName: name, reason: why,
+                                    wantLevel: level, readyAt: readyAt)
+        }
         dismiss()
     }
 }
